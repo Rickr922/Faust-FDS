@@ -38,5 +38,5 @@ outPointY=hslider("output point y",0,0,Y-1,1);
 
 example(X,Y) = (routing(X,Y, 2,2) : par (x, X, par(y,Y, schemeMidPoint))) ~ si.bus(X*Y) : si.bus(X*Y):ba.selectn(X*Y,outPoint);
 
-process = button("play") : example(nPointsX,nPointsY);
+process = button("play") : ba.impulsify : example(nPointsX,nPointsY);
 //process=model(3,3);
