@@ -3,14 +3,14 @@ import("stdfaust.lib");
 k = 1/ma.SR;
 c = 344;
 h = c * k*sqrt(2);
-nPointsX = 3;
-nPointsY = 3;
+nPointsX = 30;
+nPointsY = 30;
 
 lambda = c*k/h;
 
 nInputs = inputs(schemeMidPoint);
-routing(X, Y, x0, y0) = route(X*Y*2, X*Y*nInputs, 
-                                par(x, X, par(y, Y, connections(x,y))))   
+routing(X, Y, x0, y0) = route(X*Y*2, X*Y*nInputs,
+                                par(x, X, par(y, Y, connections(x,y))))
     with {
         in = X*Y + 1; // additional input for signal injection
         connections(x,y) =  P(x,y) + X*Y, F(x,y),
@@ -29,7 +29,7 @@ routing(X, Y, x0, y0) = route(X*Y*2, X*Y*nInputs,
         E(x,y) = (1 + 5 + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
     };
 
-model(X,Y) = 
+model(X,Y) =
         par (x, X, par(y,Y, schemeMidPoint));
 
 schemeMidPoint(fIn,u_n,u_s,u,u_w,u_e) = u*2*(1-2*lambda*lambda) - u' + lambda*lambda*(u_e+u_w+u_n+u_s) + fIn;
