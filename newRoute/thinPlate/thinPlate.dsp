@@ -10,8 +10,8 @@ c=344;
 coeff = c^2*k^2+4*s1*k;
 h = sqrt((coeff+sqrt(coeff*coeff+16*K*K*k*k)));
 
-nPointsX = 10;
-nPointsY = 10;
+nPointsX = 40;
+nPointsY = 30;
 
 lambda = c*k/h;
 

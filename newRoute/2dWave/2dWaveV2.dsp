@@ -52,7 +52,7 @@ stairsOutput(X,Y,pointX,pointY) = ba.selectn(X*Y,pointY+pointX*Y);
 linInterpolation2DOut(pointX,pointY) = linInterpolation2D(pointX,pointY):>_;
 //----------------------------------Build Model-------------------------------//
 nInputs = inputs(schemeMidPoint);
-routing(X, Y, x0, y0) = route(X*Y*2, X*Y*nInputs, 
+routing(X, Y) = route(X*Y*2, X*Y*nInputs, 
                                 par(x, X, par(y, Y, connections(x,y))))   
 with 
 {
@@ -72,7 +72,7 @@ with
     E(x,y) = (1 + 5 + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
 };
 
-model(X,Y) = (routing(X,Y, 2,2) : buildScheme(X,Y)) ~ par(i,X*Y,_*(stop==0));
+model(X,Y) = (routing(X,Y) : buildScheme(X,Y)) ~ par(i,X*Y,_*(stop==0));
     
 
 process = forceModel <: linInterpolation2D(inPointX,inPointY) : model(nPointsX,nPointsY) : linInterpolation2DOut(outPointX,outPointY)<:_,_;
