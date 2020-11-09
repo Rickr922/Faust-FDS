@@ -19,18 +19,8 @@ midCoeff = 0,alpha,0,
             0,-1,0,
             0,0,0;
 
-/*midCoeff = 0,alpha,0,
-           alpha,beta,alpha,
-           0,alpha,0;
-
-midCoeffDelay1 = 0,0,0,
-                0,-1,0,
-                0,0,0;*/
-
 r=1;
 t=1;
-
-coefficients = midCoeff,midCoeffDelay1;
 
 scheme(pointsX,pointsY) = par (i, pointsX,
                                 par(j,pointsY, midCoeff));
