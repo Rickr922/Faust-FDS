@@ -4,8 +4,8 @@ import("stdfaust.lib");
 k = 1/ma.SR;
 c = 344;
 h = c * k*sqrt(2);
-nPointsX = 2;
-nPointsY = 2;
+nPointsX = 4;
+nPointsY = 3;
 
 lambda = c*k/h;
 
@@ -36,21 +36,20 @@ schemePoint2D(R,T,coeff,fIn) = si.bus(nNeighbors)<:neighbors:
         neighbors = si.bus(nNeighbors*(T+1));
     };
 
-buildScheme2D(R,T,pointsX,pointsY,coeffs) = /*connections:*/
+buildScheme2D(R,T,pointsX,pointsY,coefficients) =
     par (x, pointsX,
-        par(y,pointsY, schemePoint2D(R,T,par(i,coeffLength,coeff(x,y,i)))))
+        par(y,pointsY, schemePoint2D(R,T,par(i,coeffsLength,coeffs(x,y,i)))))
     with
     {
         nPoints = pointsX*pointsY;
         nNeighbors = (2*R+1)^2;
-        connections = si.bus(nNeighbors*nPoints+nPoints);
         //coeff(x,y) = ba.subseq(coeffs,int((x*pointsY+y)*coeffLength),coeffLength);
-        coeff(x,y,i) = ba.selector((x*pointsY+y)*coeffLength+i,coeffLength*nPoints,coeffs);
-        coeffLength = int(nNeighbors*(T+1));
+        coeffsLength = int(nNeighbors*(T+1));
+        coeffs(x,y,i) = ba.selector((x*pointsY+y)*coeffsLength+i,coeffsLength*nPoints,coefficients);
     };
 
 //process = 10,par(i,(2*r+1)^2,i):schemePoint2D(r,t,midCoeff);
-process = par(i,40,i):buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY));
+process = par(i,120,i):buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY));
 //process = ba.take(20,scheme(nPointsX,nPointsY));
 //process=ba.count(scheme(nPointsX,nPointsY));
 //process=takeFromCoeff(1,scheme(nPointsX,nPointsY));

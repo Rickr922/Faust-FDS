@@ -5,7 +5,7 @@ k = 1/ma.SR;
 c = 344;
 h = c * k*sqrt(2);
 nPointsX = 4;
-nPointsY = 2;
+nPointsY = 3;
 
 lambda = c*k/h;
 
@@ -53,4 +53,4 @@ buildScheme2D(R,T,pointsX,pointsY,coefficients) =
     };
 
 //process = 10,par(i,(2*r+1)^2,i):schemePoint2D(r,t,coefficients);
-process = par(i,80,i):buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY));
+process = par(i,120,i):buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY));
