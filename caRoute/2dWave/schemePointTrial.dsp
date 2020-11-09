@@ -46,8 +46,6 @@ schemePoint2D(R,T,coeff,fIn) = si.bus(nNeighbors)<:neighbors:
         neighbors = si.bus(nNeighbors*(T+1));
     };
 
-//RICORDATI CHE PUOI USARE subseq PER ESTRARRE ELEMENTI DA UNA LISTA
-
 buildScheme2D(R,T,pointsX,pointsY,coeffs) = /*connections:*/
     par (x, pointsX,
         par(y,pointsY, schemePoint2D(R,T,par(i,coeffLength,coeff(x,y,i)))))
@@ -62,7 +60,7 @@ buildScheme2D(R,T,pointsX,pointsY,coeffs) = /*connections:*/
     };
 
 //process = 10,par(i,(2*r+1)^2,i):schemePoint2D(r,t,midCoeff);
-process = par(i,40,i):buildScheme2D(r,t,2,2,scheme(2,2));
+process = par(i,40,i):buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY));
 //process = ba.take(20,scheme(nPointsX,nPointsY));
 //process=ba.count(scheme(nPointsX,nPointsY));
 //process=takeFromCoeff(1,scheme(nPointsX,nPointsY));
