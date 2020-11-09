@@ -19,17 +19,21 @@ midCoeff = 0,alpha,0,
             0,-1,0,
             0,0,0;
 
+/*midCoeff = 0,alpha,0,
+           alpha,beta,alpha,
+           0,alpha,0;
+
 midCoeffDelay1 = 0,0,0,
                 0,-1,0,
-                0,0,0;
+                0,0,0;*/
 
 r=1;
 t=1;
 
-//coefficients = midCoeff,midCoeffDelay1;
+coefficients = midCoeff,midCoeffDelay1;
 
-scheme(pointsX,pointsY) = par (nPointsX, pointsX,
-                                par(nPointsY,pointsY, midCoeff));
+scheme(pointsX,pointsY) = par (i, pointsX,
+                                par(j,pointsY, midCoeff));
 
 schemePoint2D(R,T,coeff,fIn) = si.bus(nNeighbors)<:neighbors:
     sum(t,T+1,
@@ -44,26 +48,22 @@ schemePoint2D(R,T,coeff,fIn) = si.bus(nNeighbors)<:neighbors:
 
 //RICORDATI CHE PUOI USARE subseq PER ESTRARRE ELEMENTI DA UNA LISTA
 
-buildScheme2D(R,T,pointsX,pointsY,coeffs,signals) =
+buildScheme2D(R,T,pointsX,pointsY,coeffs) = /*connections:*/
     par (x, pointsX,
-        par(y,pointsY, schemePoint2D(R,T,coeff(x,y),fIn(x,y),neighbors(x,y))))
+        par(y,pointsY, schemePoint2D(R,T,par(i,coeffLength,coeff(x,y,i)))))
     with
     {
+        nPoints = pointsX*pointsY;
         nNeighbors = (2*R+1)^2;
-        coeff(x,y) = ba.subseq(coeffs,int((x*pointsY+y)*coeffLength),coeffLength);
+        connections = si.bus(nNeighbors*nPoints+nPoints);
+        //coeff(x,y) = ba.subseq(coeffs,int((x*pointsY+y)*coeffLength),coeffLength);
+        coeff(x,y,i) = ba.selector((x*pointsY+y)*coeffLength+i,coeffLength*nPoints,coeffs);
         coeffLength = int(nNeighbors*(T+1));
-        signalsLength = coeffLength+1;
-        fIn(x,y) = ba.take(int((x*pointsY+y)*signalsLength),signals);
-        neighbors(x,y) = ba.subseq(signals,int((x*pointsY+y)*signalsLength),signalsLength);
     };
 
-process = 10,par(i,(2*r+1)^2,i):schemePoint2D(r,t,midCoeff);
-//process = buildScheme2D(r,t,nPointsX,nPointsY,scheme(nPointsX,nPointsY),par(i,10*4,i));
+//process = 10,par(i,(2*r+1)^2,i):schemePoint2D(r,t,midCoeff);
+process = par(i,40,i):buildScheme2D(r,t,2,2,scheme(2,2));
+//process = ba.take(20,scheme(nPointsX,nPointsY));
+//process=ba.count(scheme(nPointsX,nPointsY));
+//process=takeFromCoeff(1,scheme(nPointsX,nPointsY));
 //process = scheme(nPointsX,nPointsY);
-
-
-/*//METHOD 2
-schemePoint2D(c0,fIn,u0) = c0*u0 + fIn;
-schemePoint2D((c0,cn),fIn,(u0,un)) = c0*u0 + schemePoint2D(cn,fIn,un);
-process = _<:schemePoint2D(midCoeff,10);*/
-//questo invece dà proprio errore, sembra che non arrivi alla seconda definizione
