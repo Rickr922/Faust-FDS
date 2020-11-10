@@ -94,7 +94,7 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k,C(x,y,k)),
+    connections(x,y) =  par(k,nCoeffs,nPoints*2+(x*Y+y)*nCoeffs+k,C(x,y,k)),
                         P(x,y) + nPoints + nCoeffs*nPoints, C(x,y,nCoeffs),
                         par(j,nNeighborsXY,
                          par(i,nNeighborsXY,
@@ -110,9 +110,9 @@ with
     nPoints = X*Y;
 };
 
-model(X,Y,r,t) =
+model(X,Y,r,t,coeffs) =
     (route2D(X,Y,r,t) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_/**(stop==0)*/);
 
 
-process = scheme(nPointsX,nPointsY),(forceModel<:stairsForce(nPointsX,nPointsY,inPointX,inPointY)):model(nPointsX,nPointsY,r,t):stairsOutput(nPointsX,nPointsY,outPointX,outPointY);
+process = forceModel <: model(nPointsX,nPointsY,r,t,scheme(nPointsX,nPointsY));
 //process = coefficients,10,par(i,9,i):schemePoint2D(1,1);
