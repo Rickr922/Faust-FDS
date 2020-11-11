@@ -33,7 +33,7 @@ inPointX=hslider("input point x", floor(nPointsX/2),0,nPointsX-1,1);
 inPointY=hslider("input point y", floor(nPointsY/2),0,nPointsY-1,1);
 outPointX=hslider("output point x",floor(nPointsX/2),0,nPointsX-1,1);
 outPointY=hslider("output point y",floor(nPointsY/2),0,nPointsY-1,1);
-forceModel = button("play") : ba.impulsify;
+hit = button("play");
 stop = button("Stop");
 
 //----------------------------------Library---------------------------------//
@@ -83,6 +83,7 @@ with
 };
 
 //----------------------------------Force---------------------------------//
+forceModel = hit:ba.impulsify;
 stairsForce(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
 
 //----------------------------------Output-------------------------------//
@@ -94,11 +95,11 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k,C(x,y,k)),
-                        P(x,y) + nPoints + nCoeffs*nPoints, C(x,y,nCoeffs),
+    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k,0),//C(x,y,k+1)),
+                        P(x,y) + nPoints + nCoeffs*nPoints, C(x,y,0),
                         par(j,nNeighborsXY,
                          par(i,nNeighborsXY,
-                           P(x,y),C(x+i-R,y+j-R,nInputs-(i*nNeighborsXY+j))));
+                           P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
 
     P(x,y) = x*Y+y+1;
     C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
