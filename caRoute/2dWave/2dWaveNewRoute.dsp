@@ -2,42 +2,25 @@ import("stdfaust.lib");
 
 //--------------------------------Model Settings-----------------------------//
 k = 1/ma.SR;
-K = 20;
-s0 = 2;
-s1 = 0.05;
-c=344;
-
-coeff = c^2*k^2+4*s1*k;
-h = sqrt((coeff+sqrt(coeff*coeff+16*K*K*k*k)));
-
-nPointsX = 10;
-nPointsY = 10;
+c = 344;
+h = c * k*sqrt(2);
+nPointsX = 3;
+nPointsY = 3;
 
 lambda = c*k/h;
 
-//----------------------------------Equations--------------------------------//
-mu=K*K*k*k/(h^4);
-den = 1+s0*k;
-A = 2*(1-10*mu-2*lambda*lambda-4*s1*k*k)/den;
-B = (s0*k+4*k*k-1)/den;
-C = (8*mu + lambda*lambda + 2*s1*k*k)/den;
-D = -2*mu/den;
-E = -mu/den;
-F = -2*s1*k*k/den;
+alpha = lambda*lambda;
+beta = 2*(1-2*lambda*lambda);
 
-midCoeff = 0,0,E,0,0,
-           0,D,C,D,0,
-           E,C,A,C,E,
-           0,D,C,D,0,
-           0,0,E,0,0;
+midCoeff = 0,alpha,0,
+           alpha,beta,alpha,
+           0,alpha,0;
 
-midCoeffDelay1 = 0,0,0,0,0,
-                 0,0,F,0,0,
-                 0,F,B,F,0,
-                 0,0,F,0,0,
-                 0,0,0,0,0;
+midCoeffDelay1 = 0,0,0,
+                0,-1,0,
+                0,0,0;
 
-r=2;
+r=1;
 t=1;
 
 coefficients = midCoeff,midCoeffDelay1;
@@ -105,13 +88,13 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
-                        P(x,y) + nPoints + nCoeffs*nPoints, C(x,y,0),
+    connections(x,y) =  par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
+                        P(x,y) + nPoints, C(x,y,0),
                         par(j,nNeighborsXY,
                          par(i,nNeighborsXY,
                            P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
 
-    P(x,y) = x*Y+y+1;
+    P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
     C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
 
     nNeighborsXY = 2*R+1;
@@ -121,9 +104,11 @@ with
     nPoints = X*Y;
 };
 
-model(X,Y,r,t) =
-    (route2D(X,Y,r,t) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_*(stop==0));
+model(X,Y,r,t,scheme) =
+    (route2D(X,Y,r,t,scheme) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_*(stop==0));
 
 
-process = scheme(nPointsX,nPointsY),(forceModel<:linInterpolation2D(nPointsX,nPointsY,inPointX,inPointY)):model(nPointsX,nPointsY,r,t):linInterpolation2DOut(nPointsX,nPointsY,outPointX,outPointY);
-//process = coefficients,10,par(i,9,i):schemePoint2D(1,1);
+process =
+    forceModel<:linInterpolation2D(nPointsX,nPointsY,inPointX,inPointY):
+        model(nPointsX,nPointsY,r,t,scheme(nPointsX,nPointsY)):
+            linInterpolation2DOut(nPointsX,nPointsY,outPointX,outPointY);
