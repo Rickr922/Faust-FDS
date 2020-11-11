@@ -52,14 +52,7 @@ with
 
 buildScheme2D(R,T,pointsX,pointsY) =
     par (x, pointsX,
-        par(y,pointsY, schemePoint2D(R,T)))
-with
-{/*
-    nPoints = pointsX*pointsY;
-    nNeighbors = (2*R+1)^2;
-    coeffsLength = int(nNeighbors*(T+1));
-    coeffs(x,y,i) = ba.selector((x*pointsY+y)*coeffsLength+i,coeffsLength*nPoints,coefficients);*/
-};
+        par(y,pointsY, schemePoint2D(R,T)));
 
 //----------------------------------Interpolation---------------------------------//
 linInterpolation2D(pointX,pointY) =
@@ -95,7 +88,7 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k,0),//C(x,y,k+1)),
+    connections(x,y) =  par(k,nCoeffs,nPoints+(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
                         P(x,y) + nPoints + nCoeffs*nPoints, C(x,y,0),
                         par(j,nNeighborsXY,
                          par(i,nNeighborsXY,
@@ -112,7 +105,7 @@ with
 };
 
 model(X,Y,r,t) =
-    (route2D(X,Y,r,t) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_/**(stop==0)*/);
+    (route2D(X,Y,r,t) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_*(stop==0));
 
 
 process = scheme(nPointsX,nPointsY),(forceModel<:stairsForce(nPointsX,nPointsY,inPointX,inPointY)):model(nPointsX,nPointsY,r,t):stairsOutput(nPointsX,nPointsY,outPointX,outPointY);
