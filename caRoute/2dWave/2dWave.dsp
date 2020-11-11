@@ -29,10 +29,10 @@ scheme(pointsX,pointsY) = par (i, pointsX,
                                 par(j,pointsY, coefficients));
 
 //----------------------------------Controls---------------------------------//
-inPointX=hslider("input point x", floor(nPointsX/2),0,nPointsX-1,1);
-inPointY=hslider("input point y", floor(nPointsY/2),0,nPointsY-1,1);
-outPointX=hslider("output point x",floor(nPointsX/2),0,nPointsX-1,1);
-outPointY=hslider("output point y",floor(nPointsY/2),0,nPointsY-1,1);
+inPointX=hslider("input point x", floor(nPointsX/2),0,nPointsX-1,0.01);
+inPointY=hslider("input point y", floor(nPointsY/2),0,nPointsY-1,0.01);
+outPointX=hslider("output point x",floor(nPointsX/2),0,nPointsX-1,0.01);
+outPointY=hslider("output point y",floor(nPointsY/2),0,nPointsY-1,0.01);
 hit = button("play");
 stop = button("Stop");
 
@@ -55,9 +55,9 @@ buildScheme2D(R,T,pointsX,pointsY) =
         par(y,pointsY, schemePoint2D(R,T)));
 
 //----------------------------------Interpolation---------------------------------//
-linInterpolation2D(pointX,pointY) =
-par(i,nPointsX,
-    par(j,nPointsY,_*
+linInterpolation2D(X,Y,pointX,pointY) =
+par(i,X,
+    par(j,Y,_*
         select2((i==intX) & (j==intY),
             select2((i==(intX+1)) & (j==intY),
                 select2((i==intX) & (j==(intY+1)),
@@ -81,7 +81,7 @@ stairsForce(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
 
 //----------------------------------Output-------------------------------//
 stairsOutput(X,Y,pointX,pointY) = ba.selectn(X*Y,pointY+pointX*Y);
-linInterpolation2DOut(pointX,pointY) = linInterpolation2D(pointX,pointY):>_;
+linInterpolation2DOut(X,Y,pointX,pointY) = linInterpolation2D(X,Y,pointX,pointY):>_;
 //----------------------------------Build Model-------------------------------//
 //nInputs = inputs(schemeMidPoint);
 route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
@@ -108,5 +108,5 @@ model(X,Y,r,t) =
     (route2D(X,Y,r,t) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_*(stop==0));
 
 
-process = scheme(nPointsX,nPointsY),(forceModel<:stairsForce(nPointsX,nPointsY,inPointX,inPointY)):model(nPointsX,nPointsY,r,t):stairsOutput(nPointsX,nPointsY,outPointX,outPointY);
+process = scheme(nPointsX,nPointsY),(forceModel<:linInterpolation2D(nPointsX,nPointsY,inPointX,inPointY)):model(nPointsX,nPointsY,r,t):linInterpolation2DOut(nPointsX,nPointsY,outPointX,outPointY);
 //process = coefficients,10,par(i,9,i):schemePoint2D(1,1);
