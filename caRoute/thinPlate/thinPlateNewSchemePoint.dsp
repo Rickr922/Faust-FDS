@@ -2,26 +2,42 @@ import("stdfaust.lib");
 
 //--------------------------------Model Settings-----------------------------//
 k = 1/ma.SR;
-c = 344;
-h = c * k*sqrt(2);
+K = 20;
+s0 = 2;
+s1 = 0.05;
+c=344;
+
+coeff = c^2*k^2+4*s1*k;
+h = sqrt((coeff+sqrt(coeff*coeff+16*K*K*k*k)));
+
 nPointsX = 10;
 nPointsY = 10;
 
 lambda = c*k/h;
 
-A = lambda*lambda;
-B = 2*(1-2*lambda*lambda);
-C = -1;
+//----------------------------------Equations--------------------------------//
+mu=K*K*k*k/(h^4);
+den = 1+s0*k;
+A = 2*(1-10*mu-2*lambda*lambda-4*s1*k*k)/den;
+B = (s0*k+4*k*k-1)/den;
+C = (8*mu + lambda*lambda + 2*s1*k*k)/den;
+D = -2*mu/den;
+E = -mu/den;
+F = -2*s1*k*k/den;
 
-midCoeff = 0,A,0,
-           A,B,A,
-           0,A,0;
+midCoeff = 0,0,E,0,0,
+           0,D,C,D,0,
+           E,C,A,C,E,
+           0,D,C,D,0,
+           0,0,E,0,0;
 
-midCoeffDelay1 = 0,0,0,
-                 0,C,0,
-                 0,0,0;
+midCoeffDelay1 = 0,0,0,0,0,
+                 0,0,F,0,0,
+                 0,F,B,F,0,
+                 0,0,F,0,0,
+                 0,0,0,0,0;
 
-r=1;
+r=2;
 t=1;
 
 coefficients = midCoeff,midCoeffDelay1;
@@ -38,17 +54,18 @@ hit = button("play");
 stop = button("Stop");
 
 //----------------------------------Library---------------------------------//
-schemePoint2D(R,T,fIn) = coeffs,neighbors<:
-    sum(t,T+1,
-        sum(i,nNeighbors,
-            ba.selector(int(i+t*nNeighbors),nNeighbors*(T+1),coeffs)*
-            ba.selector(i,nNeighbors,neighbors)@(t)))
-                + fIn
+schemePoint2D(R,T) = routing:operations:>_
 with
 {
     nNeighbors = (2*R+1)^2;
-    neighbors = si.bus(nNeighbors);
-    coeffs=si.bus(nNeighbors*(T+1));
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
 };
 
 buildScheme2D(R,T,pointsX,pointsY) =
@@ -89,11 +106,11 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
-                        P(x,y) + nPoints, C(x,y,0),
+    connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
                         par(j,nNeighborsXY,
-                         par(i,nNeighborsXY,
-                           P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
+                            par(i,nNeighborsXY,
+                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j)))),
+                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1));
 
     P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
     C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);

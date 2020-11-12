@@ -38,17 +38,18 @@ hit = button("play");
 stop = button("Stop");
 
 //----------------------------------Library---------------------------------//
-schemePoint2D(R,T,fIn) = coeffs,neighbors<:
-    sum(t,T+1,
-        sum(i,nNeighbors,
-            ba.selector(int(i+t*nNeighbors),nNeighbors*(T+1),coeffs)*
-            ba.selector(i,nNeighbors,neighbors)@(t)))
-                + fIn
+schemePoint2D(R,T) = routing:operations:>_
 with
 {
     nNeighbors = (2*R+1)^2;
-    neighbors = si.bus(nNeighbors);
-    coeffs=si.bus(nNeighbors*(T+1));
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
 };
 
 buildScheme2D(R,T,pointsX,pointsY) =
@@ -89,11 +90,11 @@ route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
-    connections(x,y) =  par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
-                        P(x,y) + nPoints, C(x,y,0),
+    connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
                         par(j,nNeighborsXY,
-                         par(i,nNeighborsXY,
-                           P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
+                            par(i,nNeighborsXY,
+                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j)))),
+                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1));
 
     P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
     C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
