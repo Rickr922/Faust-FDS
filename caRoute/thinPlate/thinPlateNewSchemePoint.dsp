@@ -10,8 +10,8 @@ c=344;
 coeff = c^2*k^2+4*s1*k;
 h = sqrt((coeff+sqrt(coeff*coeff+16*K*K*k*k)));
 
-nPointsX = 10;
-nPointsY = 10;
+nPointsX = 5;
+nPointsY = 5;
 
 lambda = c*k/h;
 
@@ -51,7 +51,6 @@ inPointY=hslider("input point y", floor(nPointsY/2),0,nPointsY-1,0.01);
 outPointX=hslider("output point x",floor(nPointsX/2),0,nPointsX-1,0.01);
 outPointY=hslider("output point y",floor(nPointsY/2),0,nPointsY-1,0.01);
 hit = button("play");
-stop = button("Stop");
 
 //----------------------------------Library---------------------------------//
 schemePoint2D(R,T) = routing:operations:>_
@@ -68,7 +67,7 @@ with
                     par(i,nNeighbors,(_@t),_:*));
 };
 
-buildScheme2D(R,T,pointsX,pointsY) =
+buildScheme2D(pointsX,pointsY,R,T) =
     par (x, pointsX,
         par(y,pointsY, schemePoint2D(R,T)));
 
@@ -101,16 +100,15 @@ stairsForce(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
 stairsOutput(X,Y,pointX,pointY) = ba.selectn(X*Y,pointY+pointX*Y);
 linInterpolation2DOut(X,Y,pointX,pointY) = linInterpolation2D(X,Y,pointX,pointY):>_;
 //----------------------------------Build Model-------------------------------//
-//nInputs = inputs(schemeMidPoint);
 route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
                                 par(x, X, par(y, Y, connections(x,y))))
 with
 {
     connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
+                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
                         par(j,nNeighborsXY,
                             par(i,nNeighborsXY,
-                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j)))),
-                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1));
+                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
 
     P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
     C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
@@ -122,11 +120,11 @@ with
     nPoints = X*Y;
 };
 
-model(X,Y,r,t,scheme) =
-    (route2D(X,Y,r,t,scheme) : buildScheme2D(r,t,X,Y)) ~ par(i,X*Y,_*(stop==0));
+model2D(X,Y,r,t,scheme) =
+    (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
 
 
 process =
     forceModel<:linInterpolation2D(nPointsX,nPointsY,inPointX,inPointY):
-        model(nPointsX,nPointsY,r,t,scheme(nPointsX,nPointsY)):
+        model2D(nPointsX,nPointsY,r,t,scheme(nPointsX,nPointsY)):
             linInterpolation2DOut(nPointsX,nPointsY,outPointX,outPointY);

@@ -1,7 +1,7 @@
 import("stdfaust.lib");
 
 //--------------------------------Model Settings-----------------------------//
-nPoints = 60;
+nPoints = 6;
 
 k = 1/ma.SR;
 c = 344;
@@ -55,7 +55,7 @@ with
     coeffs=si.bus(nNeighbors*(T+1));
 };
 
-buildScheme1D(R,T,points) =
+buildScheme1D(points,R,T) =
     par (x, points,schemePoint1D(R,T));
 
 //----------------------------------Interpolation---------------------------------//
@@ -89,9 +89,9 @@ with
     nInputs = nNeighbors+1+nCoeffs;
 };
 
-model(points,r,t,scheme) =
-    (route1D(points,r,t,scheme) : buildScheme1D(r,t,points)) ~ par(i,points,_*(stop==0));
+model1D(points,R,T,scheme) =
+    (route1D(points,R,T,scheme) : buildScheme1D(points,R,T)) ~ si.bus(points);
 
 process = forceModel<:linInterp1D(nPoints,inPoint):
-  model(nPoints,r,t,scheme(nPoints)):
+  model1D(nPoints,r,t,scheme(nPoints)):
   linInterp1DOut(nPoints,outPoint)<:_,_;
