@@ -1,22 +1,8 @@
 //-------------------------------Scheme operations----------------------------//
-schemePoint1D(R,T) = routing:operations:>_
+schemePoint(R,T,D) = routing:operations:>_
 with
 {
-    nNeighbors = (2*R+1);
-    routing =
-        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
-            (1,1),
-            par(t,T+1,
-                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
-                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
-    operations = _,par(t,T+1,
-                    par(i,nNeighbors,(_@t),_:*));
-};
-
-schemePoint2D(R,T) = routing:operations:>_
-with
-{
-    nNeighbors = (2*R+1)^2;
+    nNeighbors = (2*R+1)^D;
     routing =
         route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
             (1,1),
@@ -28,11 +14,11 @@ with
 };
 
 buildScheme1D(points,R,T) =
-    par (x, points,schemePoint1D(R,T));
+    par (x, points,schemePoint(R,T,1));
 
 buildScheme2D(pointsX,pointsY,R,T) =
     par (x, pointsX,
-        par(y,pointsY, schemePoint2D(R,T)));
+        par(y,pointsY, schemePoint(R,T,2)));
 
 //--------------------------------Interpolation-------------------------------//
 linInterp1D(points,point) = par(i,points,_*select2(
