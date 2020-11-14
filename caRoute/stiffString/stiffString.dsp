@@ -44,17 +44,18 @@ inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
 outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Library-------------------------------//
-schemePoint1D(R,T,fIn) = coeffs,neighbors<:
-    sum(t,T+1,
-        sum(i,nNeighbors,
-            ba.selector(int(i+t*nNeighbors),nNeighbors*(T+1),coeffs)*
-            ba.selector(i,nNeighbors,neighbors)@(t)))
-                + fIn
+schemePoint1D(R,T) = routing:operations:>_
 with
 {
     nNeighbors = (2*R+1);
-    neighbors = si.bus(nNeighbors);
-    coeffs=si.bus(nNeighbors*(T+1));
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
 };
 
 buildScheme1D(points,R,T) =
