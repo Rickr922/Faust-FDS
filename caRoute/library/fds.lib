@@ -1,0 +1,112 @@
+//-------------------------------Scheme operations----------------------------//
+schemePoint1D(R,T) = routing:operations:>_
+with
+{
+    nNeighbors = (2*R+1);
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
+};
+
+schemePoint2D(R,T) = routing:operations:>_
+with
+{
+    nNeighbors = (2*R+1)^2;
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
+};
+
+buildScheme1D(points,R,T) =
+    par (x, points,schemePoint1D(R,T));
+
+buildScheme2D(pointsX,pointsY,R,T) =
+    par (x, pointsX,
+        par(y,pointsY, schemePoint2D(R,T)));
+
+//--------------------------------Interpolation-------------------------------//
+linInterp1D(points,point) = par(i,points,_*select2(
+        i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
+with
+{
+    fraction = ma.frac(point);
+};
+
+linInterp2D(X,Y,pointX,pointY) =
+par(i,X,
+    par(j,Y,_*
+        select2((i==intX) & (j==intY),
+            select2((i==(intX+1)) & (j==intY),
+                select2((i==intX) & (j==(intY+1)),
+                    select2((i==(intX+1)) & (j==(intY+1)),
+                        0,
+                        fractionX*fractionY),
+                    (1-fractionX)*fractionY),
+                fractionX*(1-fractionY)),
+            (1-fractionX)*(1-fractionY))))
+with
+{
+    fractionX = ma.frac(pointX);
+    fractionY = ma.frac(pointY);
+    intX = int(pointX);
+    intY = int(pointY);
+};
+
+stairsInterpOut1D(points,point) = ba.selectoutn(points,point);
+stairsInterpOut2D(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
+
+linInterp1DOut(points,point) = linInterp1D(points,point):>_;
+linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
+
+//------------------------------Model construction----------------------------//
+route1D(points, R, T) = route(points*2+points*nCoeffs, points*nInputs,
+                                par(x, nPoints, connections(x)))
+with
+{
+    connections(x) =  par(k,nCoeffs,x*nCoeffs+k+1,C(x,k+1)),
+                      P(x) + points, C(x,0),
+                      par(i, nNeighbors, P(x),C(x-R+i,nInputs-1-i));
+
+    P(x) = x+1 + nCoeffs*points;
+    C(x,count) = (1 + count + (x*nInputs)) * (x>=0) * (x<points);
+
+    nNeighbors = 2*R+1;
+    nCoeffs = nNeighbors*(T+1);
+    nInputs = nNeighbors+1+nCoeffs;
+};
+
+route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
+                                par(x, X, par(y, Y, connections(x,y))))
+with
+{
+    connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
+                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
+                        par(j,nNeighborsXY,
+                            par(i,nNeighborsXY,
+                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
+
+    P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
+    C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
+
+    nNeighborsXY = 2*R+1;
+    nNeighbors = nNeighborsXY^2;
+    nCoeffs = nNeighbors*(T+1);
+    nInputs = nNeighbors+1+nCoeffs;
+    nPoints = X*Y;
+};
+
+model1D(points,R,T,scheme) =
+    (route1D(points,R,T,scheme) : buildScheme1D(points,R,T)) ~ si.bus(points);
+
+model2D(X,Y,r,t,scheme) =
+    (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
