@@ -11,7 +11,7 @@ k = 1 / fs;  % time step
 dur = 5*fs; % duration
 
 %Set Output Frequency [Hz]
-requestedFrequency = 80;
+requestedFrequency = 150;
 
 %   STRING SET 
 %   T = Tension [N]; gauge [inch]->radius [m]
@@ -165,11 +165,13 @@ end
 %
 %   SIMULATION
 %
-
+timeValue=0;
 for n = 1:dur
     %studParam = -(1-beta)*u(excitPosFloor) - beta*u(excitPosFloor+1) - epsilon;
-    studParam = epsilon-(1-beta)*u(excitPosFloor) - beta*u(excitPosFloor+1);
-    if studParam > 0
+     if n == 100 timeValue=1;
+    end
+    studParam = timeValue*epsilon-(1-beta)*u(excitPosFloor) - beta*u(excitPosFloor+1);
+    if studParam >= 0
         fStud = kStud*(studParam)^alpha;
     else
         fStud = 0;
@@ -195,13 +197,13 @@ for n = 1:dur
 end
 
 % Normalizing output
-maxOut = max(out);    % find max value of output
-minOut = abs(min(out));
-if maxOut>minOut
-    out = out/maxOut;
-else
-    out = out/minOut;
-end
+% maxOut = max(out);    % find max value of output
+% minOut = abs(min(out));
+% if maxOut>minOut
+%     out = out/maxOut;
+% else
+%     out = out/minOut;
+% end
 
 %
 %   PICKUP
@@ -221,5 +223,5 @@ end
 %
 
 plot(out)
-sound(out,fs)
+soundsc(out,fs)
 %audiowrite("120HzClavinet.wav",out,fs);
