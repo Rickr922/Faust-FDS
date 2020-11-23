@@ -1,0 +1,4 @@
+-Implement bow, hammer, pluck
+-Write a tutorial for the library
+-document library
+-Write paper
