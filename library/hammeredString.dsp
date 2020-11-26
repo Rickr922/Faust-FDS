@@ -44,25 +44,20 @@ play = button("hit"):ba.impulsify;
 inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
 outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
-//----------------------------------Controls---------------------------------//
-Fb = 3000*0.75; //F*M (see bilbao)
-J = Fb*k^2/den/h/rho/Area; //dirac delta profile
+//----------------------------------Force---------------------------------//
+JCoeff = (k^2/den/rho/Area);
 
-//alpha=20;
+KH = 300;
+mH = 1;
+omega0SqrH = KH/mH;
+sigma0H = 14;
+alpha = 2.5;
+offset=1;
+forceScaling = 0.009;
 
-hammer(hit,jCoeff,alpha)= _:force*jCoeff
-with
-{
-    epsilon = 0.001; //hammer-string compenetration
-    param(x) = (hit*epsilon)-x;
-    force(u) = select2((param(u)>0),0,(param(u)^alpha));
-};
-
-hammerModel(hit,jCoeff,alpha,points) = par(i,points,hammer(hit,jCoeff,alpha));
-//forceModel = play:ba.impulsify;
-
-multiplier = 100900; //coeffifient to make sound audible
-
-process = (hammerModel(play,J,1.5,nPoints):linInterp1D(nPoints,inPoint):
-  model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
-  linInterp1DOut(nPoints,outPoint)<:(_*multiplier),(_*multiplier);
+gain = 500;
+process = (linInterp1D(nPoints,inPoint):>
+    nlHammer(omega0SqrH,sigma0H,10000,alpha,k,offset,play*forceScaling)*(JCoeff)<:
+        linInterp1D(nPoints,inPoint):
+            model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
+                linInterp1DOut(nPoints,outPoint)*gain<:_,_;

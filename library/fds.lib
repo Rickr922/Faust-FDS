@@ -20,40 +20,6 @@ buildScheme2D(pointsX,pointsY,R,T) =
     par (x, pointsX,
         par(y,pointsY, schemePoint(R,T,2)));
 
-//--------------------------------Interpolation-------------------------------//
-linInterp1D(points,point) = par(i,points,_*select2(
-        i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
-with
-{
-    fraction = ma.frac(point);
-};
-
-linInterp2D(X,Y,pointX,pointY) =
-par(i,X,
-    par(j,Y,_*
-        select2((i==intX) & (j==intY),
-            select2((i==(intX+1)) & (j==intY),
-                select2((i==intX) & (j==(intY+1)),
-                    select2((i==(intX+1)) & (j==(intY+1)),
-                        0,
-                        fractionX*fractionY),
-                    (1-fractionX)*fractionY),
-                fractionX*(1-fractionY)),
-            (1-fractionX)*(1-fractionY))))
-with
-{
-    fractionX = ma.frac(pointX);
-    fractionY = ma.frac(pointY);
-    intX = int(pointX);
-    intY = int(pointY);
-};
-
-stairsInterpOut1D(points,point) = ba.selectoutn(points,point);
-stairsInterpOut2D(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
-
-linInterp1DOut(points,point) = linInterp1D(points,point):>_;
-linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
-
 //------------------------------Model construction----------------------------//
 route1D(points, R, T) = route(points*2+points*nCoeffs, points*nInputs,
                                 par(x, nPoints, connections(x)))
@@ -96,3 +62,54 @@ model1D(points,R,T,scheme) =
 
 model2D(X,Y,r,t,scheme) =
     (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
+
+//--------------------------------Interpolation-------------------------------//
+stairsInterp1D(points,point) = ba.selectoutn(points,point);
+stairsInterp2D(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
+
+linInterp1D(points,point) = par(i,points,_*select2(
+        i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
+with
+{
+    fraction = ma.frac(point);
+};
+
+linInterp2D(X,Y,pointX,pointY) =
+par(i,X,
+    par(j,Y,_*
+        select2((i==intX) & (j==intY),
+            select2((i==(intX+1)) & (j==intY),
+                select2((i==intX) & (j==(intY+1)),
+                    select2((i==(intX+1)) & (j==(intY+1)),
+                        0,
+                        fractionX*fractionY),
+                    (1-fractionX)*fractionY),
+                fractionX*(1-fractionY)),
+            (1-fractionX)*(1-fractionY))))
+with
+{
+    fractionX = ma.frac(pointX);
+    fractionY = ma.frac(pointY);
+    intX = int(pointX);
+    intY = int(pointY);
+};
+
+stairsInterp1DOut(points,point) = ba.selectoutn(points,point);
+stairsInterp2DOut(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
+
+linInterp1DOut(points,point) = linInterp1D(points,point):>_;
+linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
+
+//----------------------------------Force---------------------------------//
+nlHammer(omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
+    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_
+with
+{
+    hammerModel(in,K,offset) =
+        (_,_,_*forceCoeff,in :> _) ~ (_ <: A*_,B*_') :_-offset;
+    hammerForce(uh,u)=select2((uh-u)>0,0,((uh-u)^alpha)*(-kH));
+
+    A = (2-omega0Sqr^2*K^2)/(1+sigma0*K);
+    B = (-1)*(1-sigma0*K)/(1+sigma0*K);
+    forceCoeff = K^2/(1+sigma0*K);
+};

@@ -1,4 +1,5 @@
 -Implement bow, hammer, pluck
+-force interpolation
 -Write a tutorial for the library
 -document library
 -Write paper
