@@ -55,6 +55,7 @@ alpha = 2.5;
 offset=1;
 forceScaling = 0.009;
 
+//----------------------------------Process---------------------------------//
 gain = 500;
 process = (linInterp1D(nPoints,inPoint):>
     nlHammer(omega0SqrH,sigma0H,10000,alpha,k,offset,play*forceScaling)*(JCoeff)<:
