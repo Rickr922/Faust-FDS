@@ -22,7 +22,7 @@ rho = 8.05*10^3;        % Density [kg/m^3];
 A = pi*radius^2;        % Area of string section
 I = (pi*radius^4)/ 4;   % Moment of Inertia
 L = 1;                  % String length [m]
-E = 174e6;              % Young modulus [Pa]
+E = 174e4;              % Young modulus [Pa]
 K = sqrt(E*I/rho/A);    % Stiffness parameter
 c = sqrt(T/rho/A);      % Wave speed
 sigma1 = 0.01;         % Frequency dependent damping
@@ -149,8 +149,8 @@ for n = 1:dur
     end
     
     % retrieve outputs
-    %out(n) = uNext(outPos1);
-    out(n) = uHNextOut;
+    out(n) = uNext(outPos1);
+    %out(n) = uHNextOut;
     %out(n) = fStud;
     
 %     % % Debug: draw string
