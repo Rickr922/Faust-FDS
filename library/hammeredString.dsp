@@ -40,9 +40,9 @@ scheme(points) = par(i,points,midCoeff,midCoeffDel);
 
 
 //----------------------------------Controls---------------------------------//
-play = button("hit"):ba.impulsify;
-inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
-outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
+play = button("Play"):ba.impulsify;
+inPoint=hslider("Input Point", floor(nPoints/2),0,nPoints-1,0.01);
+outPoint=hslider("Output Point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Force---------------------------------//
 JCoeff = (k^2/den/rho/Area);
@@ -58,7 +58,7 @@ forceScaling = 0.009;
 //----------------------------------Process---------------------------------//
 gain = 500;
 process = (linInterp1D(nPoints,inPoint):>
-    nlHammer(omega0SqrH,sigma0H,10000,alpha,k,offset,play*forceScaling)*(JCoeff)<:
+    hammer(JCoeff,omega0SqrH,sigma0H,10000,alpha,k,offset,play*forceScaling)<:
         linInterp1D(nPoints,inPoint):
             model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
                 linInterp1DOut(nPoints,outPoint)*gain<:_,_;

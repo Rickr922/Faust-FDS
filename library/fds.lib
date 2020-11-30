@@ -101,15 +101,22 @@ linInterp1DOut(points,point) = linInterp1D(points,point):>_;
 linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
 
 //----------------------------------Force---------------------------------//
-nlHammer(omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
-    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_
+//----------------------------------Force---------------------------------//
+hammer(coeff,omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
+    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_*coeff
 with
 {
     hammerModel(in,K,offset) =
         (_,_,_*forceCoeff,in :> _) ~ (_ <: A*_,B*_') :_-offset;
     hammerForce(uh,u)=select2((uh-u)>0,0,((uh-u)^alpha)*(-kH));
-
     A = (2-omega0Sqr^2*K^2)/(1+sigma0*K);
     B = (-1)*(1-sigma0*K)/(1+sigma0*K);
     forceCoeff = K^2/(1+sigma0*K);
+};
+
+bow(vb,coeff,a,timeStep) = _:phi*(-coeff)
+with
+{
+    phi(u) = 1.41*a*dVel(u)*exp(-a*dVel(u)*dVel(u)+0.5);
+    dVel(x) = select2(vb==0,(x-x')/timeStep - vb,0);   
 };

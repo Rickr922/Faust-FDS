@@ -1,7 +1,7 @@
 import("stdfaust.lib");
 import("fds.lib");
 
-nPoints = 10;
+nPoints = 50;
 L = 0.1;                  // String length [m]
 //nPoints=int(L/h);
 
@@ -41,24 +41,16 @@ scheme(points) = par(i,points,midCoeff,midCoeffDel);
 
 //----------------------------------Controls---------------------------------//
 play = button("hit");
-inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
+inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,1);
 outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Controls---------------------------------//
-Vb = hslider("bow vel", 0,-1,1,0.01); //bow velocity (m/s)
-Fb = 100000; //bow force/mass (m/s^2)
+Vb = hslider("bow vel", 0,-10,10,0.01); //bow velocity (m/s)
+Fb = 1000000; 
 J = Fb*k^2/den/h;
-alpha=20;
+alpha=0.0001;
 
-bow(vb,coeff,a,timeStep) = _:phi*(-coeff/h)
-with
-{
-    phi(u) = ma.signum(dVel(u))*exp(-a*abs(dVel(u)));
-    dVel(x) = (x-x')/timeStep - vb;
-};
-
-bowModel(vb,fb,a,timeStep,nPoints) = par(i,nPoints,bow(vb,fb,a,timeStep));
-
-process = (bowModel(Vb,J,alpha,k,nPoints):linInterp1D(nPoints,inPoint):
+process = (linInterp1D(nPoints,inPoint):>bow(Vb,J,alpha,k)<:linInterp1D(nPoints,inPoint):
   model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
   linInterp1DOut(nPoints,outPoint)<:_,_;
+
