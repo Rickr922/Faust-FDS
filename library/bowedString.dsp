@@ -1,9 +1,8 @@
 import("stdfaust.lib");
 import("fds.lib");
 
-nPoints = 50;
-L = 0.1;                  // String length [m]
-//nPoints=int(L/h);
+//nPoints=int(Length/h);
+nPoints = 100;
 
 k = 1/ma.SR;
 //Stability condition
@@ -11,7 +10,6 @@ coeff = c^2*k^2 + 4*sigma1*k;
 h =sqrt((coeff + sqrt((coeff)^2 + 16*k^2*K^2))/2);
 
 T = 150;                 // Tension [N]
-//T = hslider("Tension",150,10,1000,0.1);
 radius = 3.5560e-04;    // Radius (0.016 gauge) [m]
 rho = 8.05*10^3;        // Density [kg/m^3];
 Area = ma.PI*radius^2;        // Area of string section
@@ -38,19 +36,20 @@ t=1;
 
 scheme(points) = par(i,points,midCoeff,midCoeffDel);
 
-
 //----------------------------------Controls---------------------------------//
 play = button("hit");
 inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,1);
 outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
-//----------------------------------Controls---------------------------------//
+//----------------------------------Force---------------------------------//
 Vb = hslider("bow vel", 0,-10,10,0.01); //bow velocity (m/s)
-Fb = 1000000; 
+Fb = 1000000;
 J = Fb*k^2/den/h;
 alpha=0.0001;
 
-process = (linInterp1D(nPoints,inPoint):>bow(Vb,J,alpha,k)<:linInterp1D(nPoints,inPoint):
-  model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
-  linInterp1DOut(nPoints,outPoint)<:_,_;
-
+//----------------------------------Process---------------------------------//
+//TODO: lin interp in input causes 0 output at .5 due to opposite phase
+process =
+    (stairsInterp1D(nPoints,inPoint):>bow(Vb,J,alpha,k)<:linInterp1D(nPoints,inPoint):
+  model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):linInterp1DOut(nPoints,outPoint)
+    <:_,_;

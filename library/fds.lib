@@ -1,26 +1,11 @@
-//-------------------------------Scheme operations----------------------------//
-schemePoint(R,T,D) = routing:operations:>_
-with
-{
-    nNeighbors = (2*R+1)^D;
-    routing =
-        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
-            (1,1),
-            par(t,T+1,
-                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
-                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
-    operations = _,par(t,T+1,
-                    par(i,nNeighbors,(_@t),_:*));
-};
-
-buildScheme1D(points,R,T) =
-    par (x, points,schemePoint(R,T,1));
-
-buildScheme2D(pointsX,pointsY,R,T) =
-    par (x, pointsX,
-        par(y,pointsY, schemePoint(R,T,2)));
-
 //------------------------------Model construction----------------------------//
+model1D(points,R,T,scheme) =
+    (route1D(points,R,T,scheme) : buildScheme1D(points,R,T)) ~ si.bus(points);
+
+model2D(X,Y,r,t,scheme) =
+    (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
+
+//--------------------------------Routing-------------------------------//  
 route1D(points, R, T) = route(points*2+points*nCoeffs, points*nInputs,
                                 par(x, nPoints, connections(x)))
 with
@@ -57,15 +42,32 @@ with
     nPoints = X*Y;
 };
 
-model1D(points,R,T,scheme) =
-    (route1D(points,R,T,scheme) : buildScheme1D(points,R,T)) ~ si.bus(points);
+//-------------------------------Scheme operations----------------------------//
+schemePoint(R,T,D) = routing:operations:>_
+with
+{
+    nNeighbors = (2*R+1)^D;
+    routing =
+        route(nNeighbors*(T+1)+nNeighbors+1,2*nNeighbors*(T+1)+1,
+            (1,1),
+            par(t,T+1,
+                par(i,nNeighbors,i+t*nNeighbors+2,2*(i+t*nNeighbors)+3,
+                                i+nNeighbors*(T+1)+2,2*(i+t*nNeighbors)+2)));
+    operations = _,par(t,T+1,
+                    par(i,nNeighbors,(_@t),_:*));
+};
 
-model2D(X,Y,r,t,scheme) =
-    (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
+buildScheme1D(points,R,T) =
+    par (x, points,schemePoint(R,T,1));
+
+buildScheme2D(pointsX,pointsY,R,T) =
+    par (x, pointsX,
+        par(y,pointsY, schemePoint(R,T,2)));
 
 //--------------------------------Interpolation-------------------------------//
-stairsInterp1D(points,point) = ba.selectoutn(points,point);
-stairsInterp2D(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
+stairsInterp1D(points,point) = par(i,points,_*select2(i==point,0,1));
+stairsInterp2D(X,Y,pointX,pointY) = par(i,X,
+    par(j,Y,_*select2((i==pointX) & (j==pointY),0,1)));
 
 linInterp1D(points,point) = par(i,points,_*select2(
         i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
@@ -94,13 +96,12 @@ with
     intY = int(pointY);
 };
 
-stairsInterp1DOut(points,point) = ba.selectoutn(points,point);
-stairsInterp2DOut(X,Y,pointX,pointY) = ba.selectoutn(X*Y,pointY+pointX*Y);
+stairsInterp1DOut(points,point) = ba.selectn(points,point);
+stairsInterp2DOut(X,Y,pointX,pointY) = ba.selectn(X*Y,pointY+pointX*Y);
 
 linInterp1DOut(points,point) = linInterp1D(points,point):>_;
 linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
 
-//----------------------------------Force---------------------------------//
 //----------------------------------Force---------------------------------//
 hammer(coeff,omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
     (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_*coeff
@@ -118,5 +119,5 @@ bow(vb,coeff,a,timeStep) = _:phi*(-coeff)
 with
 {
     phi(u) = 1.41*a*dVel(u)*exp(-a*dVel(u)*dVel(u)+0.5);
-    dVel(x) = select2(vb==0,(x-x')/timeStep - vb,0);   
+    dVel(x) = select2(vb==0,(x-x')/timeStep - vb,0);
 };

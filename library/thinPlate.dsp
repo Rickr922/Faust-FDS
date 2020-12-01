@@ -1,7 +1,18 @@
+/*
+IMPORTANT:
+2D models with more than 30x20 points might crash the c++ compiler
+
+2D models need to be compiled with the command line compiler, the online
+compiler might crash
+*/
+
 import("stdfaust.lib");
 import("fds.lib");
 
 //--------------------------------Model Settings-----------------------------//
+nPointsX = 20;
+nPointsY = 10;
+
 k = 1/ma.SR;
 K = 20;
 s0 = 2;
@@ -10,9 +21,6 @@ c=344;
 
 coeff = c^2*k^2+4*s1*k;
 h = sqrt((coeff+sqrt(coeff*coeff+16*K*K*k*k)));
-
-nPointsX = 30;
-nPointsY = 10;
 
 lambda = c*k/h;
 
@@ -53,8 +61,10 @@ outPointX=hslider("output point x",floor(nPointsX/2),0,nPointsX-1,0.01);
 outPointY=hslider("output point y",floor(nPointsY/2),0,nPointsY-1,0.01);
 hit = button("play");
 
+//----------------------------------Force---------------------------------//
 forceModel = hit:ba.impulsify;
 
+//----------------------------------Process---------------------------------//
 process =
     forceModel<:linInterp2D(nPointsX,nPointsY,inPointX,inPointY):
         model2D(nPointsX,nPointsY,r,t,scheme(nPointsX,nPointsY)):

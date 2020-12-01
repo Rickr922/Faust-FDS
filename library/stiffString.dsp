@@ -1,9 +1,8 @@
 import("stdfaust.lib");
 import("fds.lib");
 
-nPoints = 90;
-L = 0.1;                  // String length [m]
-//nPoints=int(L/h);
+//nPoints=int(Length/h);
+nPoints = 100;
 
 k = 1/ma.SR;
 //Stability condition
@@ -11,7 +10,6 @@ coeff = c^2*k^2 + 4*sigma1*k;
 h =sqrt((coeff + sqrt((coeff)^2 + 16*k^2*K^2))/2);
 
 T = 150;                 // Tension [N]
-//T = hslider("Tension",150,10,1000,0.1);
 radius = 3.5560e-04;    // Radius (0.016 gauge) [m]
 rho = 8.05*10^3;        // Density [kg/m^3];
 Area = ma.PI*radius^2;        // Area of string section
@@ -44,8 +42,10 @@ play = button("hit");
 inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
 outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
+//----------------------------------Force---------------------------------//
 forceModel = play:ba.impulsify;
 
+//----------------------------------Process---------------------------------//
 process = forceModel<:linInterp1D(nPoints,inPoint):
   model1D(nPoints,r,t,scheme(nPoints)):
   linInterp1DOut(nPoints,outPoint)<:_,_;

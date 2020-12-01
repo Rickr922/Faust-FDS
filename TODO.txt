@@ -1,5 +1,5 @@
--Implement bow, hammer, pluck
--force interpolation
--Write a tutorial for the library
--document library
--Write paper
+
+-Scrivi paper
+-Trova valori "sensati" per gli schemi esempio
+-scrivi guida per library
+-scrivi documentazione per library
