@@ -28,11 +28,12 @@ route2D(pointsX, pointsY, R, T) =
         par(x, pointsX, par(y, pointsY, connections(x,y))))
 with
 {
-    connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
-                        par(k,nCoeffs,(x*pointsY+y)*nCoeffs+k+1,C(x,y,k+1)),
-                        par(j,nNeighborsXY,
-                            par(i,nNeighborsXY,
-                                P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
+    connections(x,y) =
+        P(x,y) + nPoints, C(x,y,0),
+        par(k,nCoeffs,(x*pointsY+y)*nCoeffs+k+1,C(x,y,k+1)),
+        par(j,nNeighborsXY,
+        par(i,nNeighborsXY,
+            P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
 
     P(x,y) = x*pointsY+y+1 + nCoeffs*nPoints;
     C(x,y,count) = (1 + count + (x*pointsY+y)*nInputs)
