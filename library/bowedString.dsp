@@ -50,6 +50,6 @@ alpha=0.0001;
 //----------------------------------Process---------------------------------//
 //TODO: lin interp in input causes 0 output at .5 due to opposite phase
 process =
-    (stairsInterp1D(nPoints,inPoint):>bow(Vb,J,alpha,k)<:linInterp1D(nPoints,inPoint):
+    (stairsInterp1D(nPoints,inPoint):>bow(J,alpha,k,Vb)<:linInterp1D(nPoints,inPoint):
   model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):linInterp1DOut(nPoints,outPoint)
     <:_,_;

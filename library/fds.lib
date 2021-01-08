@@ -2,10 +2,11 @@
 model1D(points,R,T,scheme) =
     (route1D(points,R,T,scheme) : buildScheme1D(points,R,T)) ~ si.bus(points);
 
-model2D(X,Y,r,t,scheme) =
-    (route2D(X,Y,r,t,scheme) : buildScheme2D(X,Y,r,t)) ~ si.bus(X*Y);
+model2D(pointsX,pointsY,R,T,scheme) =
+    (route2D(pointsX,pointsY,R,T,scheme) :
+        buildScheme2D(pointsX,pointsY,R,T)) ~ si.bus(pointsX*pointsY);
 
-//--------------------------------Routing-------------------------------//  
+//--------------------------------Routing-------------------------------//
 route1D(points, R, T) = route(points*2+points*nCoeffs, points*nInputs,
                                 par(x, nPoints, connections(x)))
 with
@@ -22,24 +23,26 @@ with
     nInputs = nNeighbors+1+nCoeffs;
 };
 
-route2D(X, Y, R, T) = route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
-                                par(x, X, par(y, Y, connections(x,y))))
+route2D(pointsX, pointsY, R, T) =
+    route(nPoints*2+nPoints*nCoeffs, nPoints*nInputs,
+        par(x, pointsX, par(y, pointsY, connections(x,y))))
 with
 {
     connections(x,y) =  P(x,y) + nPoints, C(x,y,0),
-                        par(k,nCoeffs,(x*Y+y)*nCoeffs+k+1,C(x,y,k+1)),
+                        par(k,nCoeffs,(x*pointsY+y)*nCoeffs+k+1,C(x,y,k+1)),
                         par(j,nNeighborsXY,
                             par(i,nNeighborsXY,
                                 P(x,y),C(x+i-R,y+j-R,nInputs-1-(i*nNeighborsXY+j))));
 
-    P(x,y) = x*Y+y+1 + nCoeffs*nPoints;
-    C(x,y,count) = (1 + count + (x*Y+y)*nInputs) * (x>=0) * (x<X) * (y>=0) * (y<Y);
+    P(x,y) = x*pointsY+y+1 + nCoeffs*nPoints;
+    C(x,y,count) = (1 + count + (x*pointsY+y)*nInputs)
+                      * (x>=0) * (x<pointsX) * (y>=0) * (y<pointsY);
 
     nNeighborsXY = 2*R+1;
     nNeighbors = nNeighborsXY^2;
     nCoeffs = nNeighbors*(T+1);
     nInputs = nNeighbors+1+nCoeffs;
-    nPoints = X*Y;
+    nPoints = pointsX*pointsY;
 };
 
 //-------------------------------Scheme operations----------------------------//
@@ -66,8 +69,9 @@ buildScheme2D(pointsX,pointsY,R,T) =
 
 //--------------------------------Interpolation-------------------------------//
 stairsInterp1D(points,point) = par(i,points,_*select2(i==point,0,1));
-stairsInterp2D(X,Y,pointX,pointY) = par(i,X,
-    par(j,Y,_*select2((i==pointX) & (j==pointY),0,1)));
+stairsInterp2D(pointsX,pointsY,pointX,pointY) =
+    par(i,pointsX,
+        par(j,pointsY,_*select2((i==pointX) & (j==pointY),0,1)));
 
 linInterp1D(points,point) = par(i,points,_*select2(
         i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
@@ -76,9 +80,9 @@ with
     fraction = ma.frac(point);
 };
 
-linInterp2D(X,Y,pointX,pointY) =
-par(i,X,
-    par(j,Y,_*
+linInterp2D(pointsX,pointsY,pointX,pointY) =
+par(i,pointsX,
+    par(j,pointsY,_*
         select2((i==intX) & (j==intY),
             select2((i==(intX+1)) & (j==intY),
                 select2((i==intX) & (j==(intY+1)),
@@ -97,27 +101,29 @@ with
 };
 
 stairsInterp1DOut(points,point) = ba.selectn(points,point);
-stairsInterp2DOut(X,Y,pointX,pointY) = ba.selectn(X*Y,pointY+pointX*Y);
+stairsInterp2DOut(pointsX,pointsY,pointX,pointY) =
+    ba.selectn(pointsX*pointsY,pointY+pointX*Y);
 
 linInterp1DOut(points,point) = linInterp1D(points,point):>_;
-linInterp2DOut(X,Y,pointX,pointY) = linInterp2D(X,Y,pointX,pointY):>_;
+linInterp2DOut(pointsX,pointsY,pointX,pointY) =
+    linInterp2D(pointsX,pointsY,pointX,pointY):>_;
 
 //----------------------------------Force---------------------------------//
-hammer(coeff,omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
-    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_*coeff
+hammer(coeff,omega0Sqr,sigma0,kH,alpha,k,offset,fIn) =
+    (hammerForce<:hammerModel(fIn,k,offset,_),_)~_:!,_*coeff
 with
 {
-    hammerModel(in,K,offset) =
+    hammerModel(in,k,offset) =
         (_,_,_*forceCoeff,in :> _) ~ (_ <: A*_,B*_') :_-offset;
     hammerForce(uh,u)=select2((uh-u)>0,0,((uh-u)^alpha)*(-kH));
-    A = (2-omega0Sqr^2*K^2)/(1+sigma0*K);
-    B = (-1)*(1-sigma0*K)/(1+sigma0*K);
-    forceCoeff = K^2/(1+sigma0*K);
+    A = (2-omega0Sqr^2*k^2)/(1+sigma0*k);
+    B = (-1)*(1-sigma0*k)/(1+sigma0*k);
+    forceCoeff = k^2/(1+sigma0*K);
 };
 
-bow(vb,coeff,a,timeStep) = _:phi*(-coeff)
+bow(coeff,alpha,k,vb) = _:phi*(-coeff)
 with
 {
-    phi(u) = 1.41*a*dVel(u)*exp(-a*dVel(u)*dVel(u)+0.5);
-    dVel(x) = select2(vb==0,(x-x')/timeStep - vb,0);
+    phi(u) = 1.41*alpha*dVel(u)*exp(-alpha*dVel(u)*dVel(u)+0.5);
+    dVel(x) = select2(vb==0,(x-x')/k - vb,0);
 };
