@@ -150,6 +150,7 @@ stairsInterp2D(pointsX,pointsY,pointX,pointY) =
 //
 // * `points`: total number of points in the mesh
 // * `point`: floating point index
+//------------------------------------------------------------------------------
 linInterp1D(points,point) = par(i,points,_*select2(
         i==int(point), select2(i==int(point+1),0,fraction),(1-fraction)))
 with
@@ -173,6 +174,7 @@ with
 // * `pointsY`: total number of points in the Y direction
 // * `pointX`: horizontal float index
 // * `pointY`: vertical float index
+//------------------------------------------------------------------------------
 linInterp2D(pointsX,pointsY,pointX,pointY) =
 par(i,pointsX,
     par(j,pointsY,_*
