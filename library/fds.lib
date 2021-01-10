@@ -420,7 +420,7 @@ with
                     par(i,nNeighbors,(_@t),_:*));
 };
 
-//------------------------------`(fds.)buildScheme1D`-----------------------------
+//------------------------------`(fds.)buildScheme1D`---------------------------
 // This function is used to stack in parallel several schemePoint functions in
 // 1 dimension, according to the number of points.
 //
@@ -439,7 +439,7 @@ with
 buildScheme1D(points,R,T) =
     par (x, points,schemePoint(R,T,1));
 
-//------------------------------`(fds.)buildScheme2D`-----------------------------
+//------------------------------`(fds.)buildScheme2D`---------------------------
 // This function is used to stack in parallel several schemePoint functions in
 // 2 dimensions, according to the number of points in the X and Y directions.
 //
@@ -491,7 +491,7 @@ buildScheme2D(pointsX,pointsY,R,T) =
 // * `k`: time sampling step (the same as for the mesh)
 // * `offset`: distance between the string and the hammer at rest in meters
 // * `fIn`: hammer excitation signal (i.e. a button)
-//---------------------------------------------------------
+//------------------------------------------------------------------------------
 hammer(coeff,omega0Sqr,sigma0,kH,alpha,k,offset,fIn) =
     (hammerForce<:hammerModel(fIn,k,offset,_),_)~_:!,_*coeff
 with
@@ -520,7 +520,7 @@ with
 // * `alpha`: nonlinearity parameter
 // * `k`: time sampling step (the same as for the mesh)
 // * `vb`: bow velocity [m/s]
-//---------------------------------------------------------
+//------------------------------------------------------------------------------
 bow(coeff,alpha,k,vb) = _:phi*(-coeff)
 with
 {
