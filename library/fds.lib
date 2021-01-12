@@ -427,7 +427,8 @@ with
 // #### Usage
 //
 // ```
-// buildScheme1D(points,R,T)
+// si.bus((1 + ((2*R+1)*(T+1)) + (2*R+1))*points) : buildScheme1D(points,R,T) :
+//    si.bus(points)
 // ```
 //
 // Where:
@@ -446,7 +447,8 @@ buildScheme1D(points,R,T) =
 // #### Usage
 //
 // ```
-// buildScheme2D(pointsX,pointsY,R,T)
+// si.bus((1 + ((2*R+1)^2*(T+1)) + (2*R+1)^2)*pointsX*pointsY) :
+//    buildScheme2D(pointsX,pointsY,R,T) : si.bus(pointsX*pointsY)
 // ```
 //
 // Where:
