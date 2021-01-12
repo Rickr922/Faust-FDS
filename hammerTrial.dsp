@@ -4,14 +4,14 @@ k = 1/ma.SR;
 
 excit = button("click me"):ba.impulsify*0.006;
 
-KH = 200;
+KH = 1000;
 mH = 0.9;
 omega0SqrH = KH/mH;
 sigma0H = 14;
-alpha = 3;
+alpha = 2.5;
 
 nlHammer(omega0Sqr,sigma0,kH,alpha,K,offset,fIn) =
-    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:!,_
+    (hammerForce<:hammerModel(fIn,K,offset,_),_)~_:_,!
 with
 {
     hammerModel(in,K,offset) =
@@ -22,4 +22,4 @@ with
     forceCoeff = K^2/(1+sigma0*K);
 };
 
-process = 0:nlHammer(omega0SqrH,sigma0H,10000,alpha,k,1,excit);
+process = 0:nlHammer(omega0SqrH,sigma0H,10000,alpha,k,0.23,excit);
