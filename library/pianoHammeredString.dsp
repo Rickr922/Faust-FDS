@@ -59,11 +59,13 @@ inPoint=hslider("Input Point", floor(nPoints/2),0,nPoints-1,0.01);
 outPoint=hslider("Output Point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Force---------------------------------//
-/*Data:
+/*Some data from:
 A. Sutlov,
 Experimental and theoretical studies of piano hammer,
 Proceedings of SMAC 03,
 pages 175-178*/
+
+KHammer = 30000;
 
 JCoeff = (k^2/den/rho/Area);
 
@@ -79,7 +81,7 @@ forceScaling = 0.01;
 gain = 1000;
 
 process = (linInterp1D(nPoints,inPoint):>
-    hammer(JCoeff,omega0SqrH,sigma0H,30000,alpha,k,offset,play*forceScaling)<:
+    hammer(JCoeff,omega0SqrH,sigma0H,,alpha,k,offset,play*forceScaling)<:
         linInterp1D(nPoints,inPoint):
             model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
                 linInterp1DOut(nPoints,outPoint)*gain<:_,_;
