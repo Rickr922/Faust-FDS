@@ -40,7 +40,6 @@ declare name "Faust finite difference schemes library";
 declare version "0.0";
 declare author "Riccardo Russo";
 declare author "Romain Michon";
-//declare copyright "??";
 
 /*
 TODO:
