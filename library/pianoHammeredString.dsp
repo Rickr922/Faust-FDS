@@ -59,7 +59,7 @@ inPoint=hslider("Input Point", floor(nPoints/2),0,nPoints-1,0.01);
 outPoint=hslider("Output Point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Force---------------------------------//
-/*Some data from:
+/*Hammer stiffness from:
 A. Sutlov,
 Experimental and theoretical studies of piano hammer,
 Proceedings of SMAC 03,
