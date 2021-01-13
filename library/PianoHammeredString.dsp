@@ -81,7 +81,7 @@ forceScaling = 0.01;
 gain = 1000;
 
 process = (linInterp1D(nPoints,inPoint):>
-    hammer(JCoeff,omega0SqrH,sigma0H,,alpha,k,offset,play*forceScaling)<:
+    hammer(JCoeff,omega0SqrH,sigma0H,KHammer,alpha,k,offset,play*forceScaling)<:
         linInterp1D(nPoints,inPoint):
             model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):
                 linInterp1DOut(nPoints,outPoint)*gain<:_,_;
