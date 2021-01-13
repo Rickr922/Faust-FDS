@@ -44,20 +44,20 @@ t=1;
 scheme(points) = par(i,points,midCoeff,midCoeffDel);
 
 //----------------------------------Controls---------------------------------//
-play = button("hit");
-inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,1);
-outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
+play = button("Play");
+inPoint=hslider("Input Point", floor(nPoints/2),0,nPoints-1,1);
+outPoint=hslider("Output Point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
-//----------------------------------Force Settings----------------------------//
-Vb = hslider("bow vel", 0,-10,10,0.01); //bow velocity [m/s]
+//----------------------------------Force------------------------------------//
+Vb = hslider("Bow Vel", 0,-10,10,0.01); //bow velocity [m/s]
 Fb = 4000; //[m/s^]
 J = Fb*k^2/den/h;
 alpha=0.01;
 
-gain=60;//10^5;
+gain=60;
 
 //----------------------------------Process---------------------------------//
-//TODO: lin interp in input causes 0 output at .5 due to opposite phase
+//TODO: linear interp in input causes 0 output at .5 due to opposite phases
 process =
     (stairsInterp1D(nPoints,inPoint):>bow(J,alpha,k,Vb)<:linInterp1D(nPoints,inPoint):
   model1D(nPoints,r,t,scheme(nPoints)))~si.bus(nPoints):linInterp1DOut(nPoints,outPoint)

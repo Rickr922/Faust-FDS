@@ -25,10 +25,9 @@ t=1;
 scheme(points) = par(i,points,midCoeff,midCoeffDel);
 
 //----------------------------------Controls---------------------------------//
-play = button("hit");
-stop = button("Stop");
-inPoint=hslider("input point", floor(nPoints/2),0,nPoints-1,0.01);
-outPoint=hslider("output point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
+play = button("Play");
+inPoint=hslider("Input Point", floor(nPoints/2),0,nPoints-1,0.01);
+outPoint=hslider("Output Point",floor(nPoints/2),0,nPoints-1,0.01):si.smoo;
 
 //----------------------------------Force---------------------------------//
 forceModel = play:ba.impulsify;

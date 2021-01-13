@@ -32,7 +32,7 @@ Emod = 200e9;               // Young modulus [Pa]
 K = sqrt(Emod*I/rho/Area);  // Stiffness parameter
 c = sqrt(T/rho/Area);       // Wave speed
 sigma1 = 0.01;              // Frequency dependent damping
-sigma0 = 0.05;            // Frequency independent damping
+sigma0 = 0.05;              // Frequency independent damping
 
 mass = Area*L*rho;
 
