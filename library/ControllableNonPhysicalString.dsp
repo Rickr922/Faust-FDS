@@ -12,9 +12,9 @@ import("stdfaust.lib");
     get an idea on how the parameters work, and then try with values even
     outside these sliders range, to explore new sounds.
     
-    Beware that, being non physical, some parameters configurations might
-    make the model blow up. In case that happens, simply re-run the program
-    to go back to reset the dsp.
+    Beware that, being non physical, some parameters configurations could
+    blow up the model. In case that happens, simply re-run the program
+    to reset the dsp.
 
     Have fun!
 */
