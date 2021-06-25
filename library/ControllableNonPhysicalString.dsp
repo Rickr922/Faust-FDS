@@ -3,7 +3,7 @@ import("stdfaust.lib");
 /*DISCLAMER:
     This is a creative "non physical" finite difference scheme physical model
     of a string, intended to show how changing the different physical 
-    parameters has an impact on the sounding characteristics of the string. 
+    parameters has an impact on the sounding characteristics of the string.
     
     I have to say that to make things physically correct, the number of 
     string points should change according to the variations of each 
@@ -11,6 +11,10 @@ import("stdfaust.lib");
     correct models can become a bit boring. You can use this model to
     get an idea on how the parameters work, and then try with values even
     outside these sliders range, to explore new sounds.
+    
+    Beware that, being non physical, some parameters configurations could
+    blow up the model. In case that happens, simply re-run the program
+    to reset the dsp.
 
     Have fun!
 */
